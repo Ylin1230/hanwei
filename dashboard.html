@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>销售工作台</title>
+  <style>
+    :root {
+      --primary: #1677ff;
+      --primary-light: #e6f4ff;
+      --secondary: #0ea5e9;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --green-light: #d1fae5;
+      --yellow-light: #fef3c7;
+      --red-light: #fee2e2;
+      --bg: #f0f4f8;
+      --card-bg: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-muted: #94a3b8;
+      --border: #e2e8f0;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-hover: 0 8px 32px rgba(22,119,255,0.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ===== Header ===== */
+    .header {
+      background: linear-gradient(135deg, #1677ff 0%, #0ea5e9 100%);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 16px rgba(22,119,255,0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .header-logo {
+      width: 36px;
+      height: 36px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .header-title {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .header-subtitle {
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      margin-left: 4px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-time {
+      color: rgba(255,255,255,0.85);
+      font-size: 13px;
+    }
+    .refresh-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: rgba(255,255,255,0.35); }
+    .refresh-btn.loading .icon-refresh { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== Main ===== */
+    .main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 24px 40px;
+    }
+
+    /* ===== Section Title ===== */
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    /* ===== Metrics Grid ===== */
+    .metrics-section { margin-bottom: 28px; }
+    .metrics-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .metrics-grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .metrics-grid-4-wrap { grid-template-columns: repeat(4, 1fr); }
+
+    /* ===== Metric Card ===== */
+    .metric-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 24px 20px 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: all 0.25s cubic-bezier(.4,0,.2,1);
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--card-accent, var(--primary));
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .metric-card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+    }
+    .metric-icon-wrap {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      background: var(--icon-bg, var(--primary-light));
+    }
+    .metric-body { flex: 1; min-width: 0; }
+    .metric-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .metric-value {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .metric-unit {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .metric-trend {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .skeleton {
+      display: inline-block;
+      width: 60px;
+      height: 32px;
+      background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Card Color Variants */
+    .card-blue   { --card-accent: #1677ff; --icon-bg: #e6f4ff; }
+    .card-cyan   { --card-accent: #06b6d4; --icon-bg: #ecfeff; }
+    .card-violet { --card-accent: #7c3aed; --icon-bg: #ede9fe; }
+    .card-pink   { --card-accent: #ec4899; --icon-bg: #fce7f3; }
+    .card-emerald { --card-accent: #10b981; --icon-bg: #d1fae5; }
+    .card-amber  { --card-accent: #f59e0b; --icon-bg: #fef3c7; }
+    .card-rose   { --card-accent: #ef4444; --icon-bg: #fee2e2; }
+    .card-indigo { --card-accent: #6366f1; --icon-bg: #e0e7ff; }
+    .card-teal   { --card-accent: #14b8a6; --icon-bg: #ccfbf1; }
+    .card-orange { --card-accent: #f97316; --icon-bg: #ffedd5; }
+    .card-slate  { --card-accent: #64748b; --icon-bg: #f1f5f9; }
+    .card-sky    { --card-accent: #0ea5e9; --icon-bg: #e0f2fe; }
+
+    /* ===== Light Bulb Cards (商机灯) ===== */
+    .lamp-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .lamp-card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.25s;
+    }
+    .lamp-card:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+    .lamp-bulb {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+    .lamp-bulb.green  { background: #d1fae5; }
+    .lamp-bulb.yellow { background: #fef3c7; }
+    .lamp-bulb.red    { background: #fee2e2; }
+    .lamp-info {}
+    .lamp-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+    .lamp-value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .lamp-value.green  { color: #10b981; }
+    .lamp-value.yellow { color: #d97706; }
+    .lamp-value.red    { color: #ef4444; }
+
+    /* ===== Error State ===== */
+    .error-val {
+      font-size: 14px;
+      color: #ef4444;
+    }
+
+    /* ===== Last Update ===== */
+    .update-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      margin-top: -8px;
+    }
+    .update-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== Placeholder ===== */
+    .placeholder-section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 40px;
+      box-shadow: var(--shadow);
+      border: 1px dashed var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 28px;
+    }
+    .placeholder-section .ph-icon { font-size: 48px; margin-bottom: 12px; }
+    .placeholder-section p { line-height: 1.8; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1200px) {
+      .metrics-grid-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .main { padding: 16px; }
+      .metrics-grid-4 { grid-template-columns: repeat(1, 1fr); }
+      .lamp-cards { grid-template-columns: 1fr; }
+      .header { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header class="header">
+  <div class="header-left">
+    <div class="header-logo">📊</div>
+    <div>
+      <div class="header-title">销售工作台</div>
+    </div>
+    <span class="header-subtitle">实时数据看板</span>
+  </div>
+  <div class="header-right">
+    <div class="header-time" id="headerTime"></div>
+    <button class="refresh-btn" id="refreshBtn" onclick="loadDashboard()">
+      <span class="icon-refresh" id="refreshIcon">↻</span>
+      刷新数据
+    </button>
+  </div>
+</header>
+
+<!-- ===== Main ===== -->
+<div class="main">
+
+  <!-- 更新时间 -->
+  <div class="update-bar">
+    <div class="update-dot" id="updateDot"></div>
+    <span id="updateTime">正在加载...</span>
+  </div>
+
+  <!-- 第一行：客户概览 -->
+  <div class="metrics-section">
+    <div class="section-title">客户概览</div>
+    <div class="metrics-grid metrics-grid-4">
+
+      <div class="metric-card card-blue">
+        <div class="metric-icon-wrap">👥</div>
+        <div class="metric-body">
+          <div class="metric-label">客户人员总数</div>
+          <div class="metric-value">
+            <span id="val-customer-total" class="skeleton"></span>
+            <span class="metric-unit">个</span>
+          </div>
+          <div class="metric-trend">全量客户数据</div>
+        </div>
+      </div>
+
+      <div class="metric-card card-cyan">
+        <div class="metric-icon-wrap">🆕</div>
+        <div class="metric-body">
+          <div class="metric-label">本月新增客户</div>
+          <div class="metric-value">
+            <span id="val-customer-new" class="skeleton"></span>
+            <span class="metric-unit">个</span>
+          </div>
+          <div class="metric-trend">当月新建档案</div>
+        </div>
+      </div>
+
+      <div class="metric-card card-violet">
+        <div class="metric-icon-wrap">🤝</div>
+        <div class="metric-body">
+          <div class="metric-label">本月客户拜访</div>
+          <div class="metric-value">
+            <span id="val-visit" class="skeleton"></span>
+            <span class="metric-unit">次</span>
+          </div>
+          <div class="metric-trend">当月跟进记录</div>
+        </div>
+      </div>
+
+      <div class="metric-card card-pink">
+        <div class="metric-icon-wrap">🍽️</div>
+        <div class="metric-body">
+          <div class="metric-label">本月客户宴请</div>
+          <div class="metric-value">
+            <span id="val-reception" class="skeleton"></span>
+            <span class="metric-unit">次</span>
+          </div>
+          <div class="metric-trend">当月宴请接待</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 第二行：跟进 & 线索 -->
+  <div class="metrics-section">
+    <div class="section-title">线索 · 跟进</div>
+    <div class="metrics-grid metrics-grid-4">
+
+      <div class="metric-card card-emerald">
+        <div class="metric-icon-wrap">🔍</div>
+        <div class="metric-body">
+          <div class="metric-label">本月线索跟进</div>
+          <div class="metric-value">
+            <span id="val-clue-followup" class="skeleton"></span>
+            <span class="metric-unit">次</span>
+          </div>
+          <div class="metric-trend">类型：线索跟进</div>
+        </div>
+      </div>
+
+      <div class="metric-card card-indigo">
+        <div class="metric-icon-wrap">📋</div>
+        <div class="metric-body">
+          <div class="metric-label">待处理线索</div>
+          <div class="metric-value">
+            <span id="val-clue-pending" class="skeleton"></span>
+            <span class="metric-unit">个</span>
+          </div>
+          <div class="metric-trend">状态：未分配</div>
+        </div>
+      </div>
+
+      <div class="metric-card card-teal">
+        <div class="metric-icon-wrap">💡</div>
+        <div class="metric-body">
+          <div class="metric-label">在跟商机总数</div>
+          <div class="metric-value">
+            <span id="val-opp-total" class="skeleton"></span>
+            <span class="metric-unit">个</span>
+          </div>
+          <div class="metric-trend">全量商机</div>
+        </div>
+      </div>
+
+      <div class="metric-card card-sky">
+        <div class="metric-icon-wrap">✨</div>
+        <div class="metric-body">
+          <div class="metric-label">本月新增商机</div>
+          <div class="metric-value">
+            <span id="val-opp-new" class="skeleton"></span>
+            <span class="metric-unit">个</span>
+          </div>
+          <div class="metric-trend">当月新建商机</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 第三行：商机跟进 + 灯色商机 -->
+  <div class="metrics-section">
+    <div class="section-title">商机跟进 · 商机状态</div>
+    <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 16px;">
+
+      <!-- 商机跟进 -->
+      <div class="metric-card card-amber" style="align-items: flex-start;">
+        <div class="metric-icon-wrap">📈</div>
+        <div class="metric-body">
+          <div class="metric-label">本月商机跟进</div>
+          <div class="metric-value">
+            <span id="val-opp-followup" class="skeleton"></span>
+            <span class="metric-unit">次</span>
+          </div>
+          <div class="metric-trend">类型：商机跟进</div>
+        </div>
+      </div>
+
+      <!-- 灯色商机 -->
+      <div class="lamp-cards">
+        <div class="lamp-card">
+          <div class="lamp-bulb green">🟢</div>
+          <div class="lamp-info">
+            <div class="lamp-label">绿灯商机</div>
+            <div class="lamp-value green">
+              <span id="val-opp-green" class="skeleton"></span>
+              <span style="font-size:14px; font-weight:500; color:#6b7280; margin-left:2px">个</span>
+            </div>
+          </div>
+        </div>
+        <div class="lamp-card">
+          <div class="lamp-bulb yellow">🟡</div>
+          <div class="lamp-info">
+            <div class="lamp-label">黄灯商机</div>
+            <div class="lamp-value yellow">
+              <span id="val-opp-yellow" class="skeleton"></span>
+              <span style="font-size:14px; font-weight:500; color:#6b7280; margin-left:2px">个</span>
+            </div>
+          </div>
+        </div>
+        <div class="lamp-card">
+          <div class="lamp-bulb red">🔴</div>
+          <div class="lamp-info">
+            <div class="lamp-label">红灯商机</div>
+            <div class="lamp-value red">
+              <span id="val-opp-red" class="skeleton"></span>
+              <span style="font-size:14px; font-weight:500; color:#6b7280; margin-left:2px">个</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 待扩展区域 -->
+  <div class="placeholder-section">
+    <div class="ph-icon">📊</div>
+    <p>
+      <strong>销售年度累计实时数据 · 销售业绩达成情况图表</strong><br>
+      待接入更多接口后逐步完善，后续可展示按销售人员分组的拜访、商机、客户数统计及柱状图等可视化内容。
+    </p>
+  </div>
+
+</div>
+
+<script>
+  // ===== 时钟 =====
+  function updateClock() {
+    const now = new Date();
+    const str = now.toLocaleDateString('zh-CN', {year:'numeric',month:'2-digit',day:'2-digit'})
+      + ' ' + now.toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('headerTime').textContent = str;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // ===== API =====
+  const API_KEY = 'HUpxXaus89GsVJwR3Imkq5beyF4mup2Z';
+  const BASE = 'https://ahyg.online-office.net';
+  const APP_ID = '51ba0d9e0f8ebfbd3bed1bc8';
+
+  const ENTRY_CUSTOMER    = '503e3fa088717299600a46f5';
+  const ENTRY_FOLLOWUP    = '5c5f98606d6aba37c3eead64';
+  const ENTRY_RECEPTION   = 'f1aa4b82881f55a84894b06d';
+  const ENTRY_CLUE        = '55978023b70d62687ee11897';
+  const ENTRY_OPPORTUNITY = '5cce95109bd26d02432c141b';
+
+  function getMonthRange() {
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    return [firstDay.getTime(), lastDay.getTime()];
+  }
+
+  async function fetchCount(entryId, filter) {
+    const url = `${BASE}/openapi/v1/app/${APP_ID}/entry/${entryId}/data_count`;
+    const body = filter ? { filter } : {};
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json;charset=utf-8',
+        },
+        body: JSON.stringify(body),
+      });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      return data.count ?? data.data?.count ?? 0;
+    } catch(e) {
+      console.error(`[fetchCount] entry=${entryId}`, e);
+      return null;
+    }
+  }
+
+  function setValue(id, val, unit) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (val === null || val === undefined) {
+      el.className = 'error-val';
+      el.textContent = '—';
+    } else {
+      el.className = '';
+      el.textContent = val;
+    }
+  }
+
+  async function loadDashboard() {
+    // 设置加载状态
+    const btn = document.getElementById('refreshBtn');
+    const icon = document.getElementById('refreshIcon');
+    btn.classList.add('loading');
+    icon.style.display = 'inline-block';
+
+    // 重置为骨架屏
+    const ids = ['val-customer-total','val-customer-new','val-visit','val-reception',
+                 'val-clue-followup','val-clue-pending','val-opp-total','val-opp-new',
+                 'val-opp-followup','val-opp-green','val-opp-yellow','val-opp-red'];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.className = 'skeleton'; el.textContent = ''; }
+    });
+
+    document.getElementById('updateTime').textContent = '正在加载...';
+    document.getElementById('updateDot').style.background = '#f59e0b';
+
+    const [start, end] = getMonthRange();
+
+    // 本月时间筛选（使用系统创建时间）
+    const monthCreateFilter = {
+      rel: 'and',
+      cond: [{ field: 'createTime', method: 'range', value: [String(start), String(end)] }]
+    };
+
+    // 跟进时间字段
+    const monthFollowupFilter = {
+      rel: 'and',
+      cond: [{ field: '_widget_1767764415125', method: 'range', value: [String(start), String(end)] }]
+    };
+
+    // 接待时间字段
+    const monthReceptionFilter = {
+      rel: 'and',
+      cond: [{ field: '_widget_1767841428824', method: 'range', value: [String(start), String(end)] }]
+    };
+
+    // 线索跟进（跟进时间本月 + 类型=线索跟进）
+    const clueFollowupFilter = {
+      rel: 'and',
+      cond: [
+        { field: '_widget_1767764415125', method: 'range', value: [String(start), String(end)] },
+        { field: '_widget_1765330422881', method: 'eq', value: ['线索跟进'] }
+      ]
+    };
+
+    // 商机跟进（跟进时间本月 + 类型=商机跟进）
+    const oppFollowupFilter = {
+      rel: 'and',
+      cond: [
+        { field: '_widget_1767764415125', method: 'range', value: [String(start), String(end)] },
+        { field: '_widget_1765330422881', method: 'eq', value: ['商机跟进'] }
+      ]
+    };
+
+    // 待处理线索（状态=未分配）
+    const clueUnassignedFilter = {
+      rel: 'and',
+      cond: [{ field: '_widget_1767495591693', method: 'eq', value: ['未分配'] }]
+    };
+
+    // 商机状态
+    const oppRedFilter    = { rel:'and', cond:[{ field:'_widget_1767768490750', method:'eq', value:['红灯'] }] };
+    const oppYellowFilter = { rel:'and', cond:[{ field:'_widget_1767768490750', method:'eq', value:['黄灯'] }] };
+    const oppGreenFilter  = { rel:'and', cond:[{ field:'_widget_1767768490750', method:'eq', value:['绿灯'] }] };
+
+    // 并发请求
+    const [
+      customerTotal,
+      customerNew,
+      visitCount,
+      receptionCount,
+      clueFollowup,
+      oppFollowup,
+      clueUnassigned,
+      oppTotal,
+      oppNew,
+      oppRed,
+      oppYellow,
+      oppGreen,
+    ] = await Promise.all([
+      fetchCount(ENTRY_CUSTOMER, null),
+      fetchCount(ENTRY_CUSTOMER, monthCreateFilter),
+      fetchCount(ENTRY_FOLLOWUP, monthFollowupFilter),
+      fetchCount(ENTRY_RECEPTION, monthReceptionFilter),
+      fetchCount(ENTRY_FOLLOWUP, clueFollowupFilter),
+      fetchCount(ENTRY_FOLLOWUP, oppFollowupFilter),
+      fetchCount(ENTRY_CLUE, clueUnassignedFilter),
+      fetchCount(ENTRY_OPPORTUNITY, null),
+      fetchCount(ENTRY_OPPORTUNITY, monthCreateFilter),
+      fetchCount(ENTRY_OPPORTUNITY, oppRedFilter),
+      fetchCount(ENTRY_OPPORTUNITY, oppYellowFilter),
+      fetchCount(ENTRY_OPPORTUNITY, oppGreenFilter),
+    ]);
+
+    setValue('val-customer-total', customerTotal);
+    setValue('val-customer-new',   customerNew);
+    setValue('val-visit',          visitCount);
+    setValue('val-reception',      receptionCount);
+    setValue('val-clue-followup',  clueFollowup);
+    setValue('val-clue-pending',   clueUnassigned);
+    setValue('val-opp-total',      oppTotal);
+    setValue('val-opp-new',        oppNew);
+    setValue('val-opp-followup',   oppFollowup);
+    setValue('val-opp-green',      oppGreen);
+    setValue('val-opp-yellow',     oppYellow);
+    setValue('val-opp-red',        oppRed);
+
+    // 更新时间
+    const now = new Date();
+    const timeStr = `上次更新: ${now.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+    document.getElementById('updateTime').textContent = timeStr;
+    document.getElementById('updateDot').style.background = '#10b981';
+
+    btn.classList.remove('loading');
+  }
+
+  // 初始加载
+  loadDashboard();
+
+  // 每5分钟自动刷新
+  setInterval(loadDashboard, 5 * 60 * 1000);
+</script>
+</body>
+</html>
