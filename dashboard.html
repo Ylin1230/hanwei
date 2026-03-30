@@ -151,6 +151,82 @@
     }
 
     .val-error { font-size: 18px; color: #bbb; }
+
+    /* ── 销售年度数据表格 ── */
+    .sales-table-wrap {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #ebebeb;
+      overflow: hidden;
+      margin-top: 4px;
+    }
+    .sales-table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .sales-table-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+    .sales-year-tag {
+      font-size: 12px;
+      color: #1677ff;
+      background: #e8f4ff;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+    /* 横向滚动容器 */
+    .sales-table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table.sales-table {
+      width: 100%;
+      min-width: 560px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table.sales-table th {
+      background: #fafafa;
+      color: #888;
+      font-weight: 500;
+      padding: 9px 12px;
+      text-align: right;
+      white-space: nowrap;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    table.sales-table th:first-child { text-align: left; }
+    table.sales-table td {
+      padding: 10px 12px;
+      text-align: right;
+      color: #333;
+      border-bottom: 1px solid #f8f8f8;
+      white-space: nowrap;
+    }
+    table.sales-table td:first-child { text-align: left; font-weight: 500; }
+    table.sales-table tr:last-child td { border-bottom: none; }
+    table.sales-table tr:hover td { background: #fafafa; }
+    .target-null { color: #ccc; font-style: italic; }
+    .amount-val { font-weight: 600; color: #1a1a1a; }
+    .table-skeleton {
+      display: inline-block;
+      width: 40px; height: 14px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 3px;
+      vertical-align: middle;
+    }
+    .sales-empty {
+      text-align: center;
+      color: #bbb;
+      padding: 24px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
@@ -238,7 +314,35 @@
     </div>
   </div>
 
-</div>
+  <!-- 销售年度累计数据 -->
+  <div class="group-label">销售年度累计数据</div>
+  <div class="sales-table-wrap">
+    <div class="sales-table-header">
+      <span class="sales-table-title">按销售人员统计</span>
+      <span class="sales-year-tag" id="salesYearTag">2026年</span>
+    </div>
+    <div class="sales-table-scroll">
+      <table class="sales-table" id="salesTable">
+        <thead>
+          <tr>
+            <th>销售</th>
+            <th>年度目标</th>
+            <th>年度成交金额</th>
+            <th>成交商机数</th>
+            <th>在跟商机数</th>
+            <th>客户数量</th>
+            <th>客户拜访</th>
+            <th>客户接待</th>
+          </tr>
+        </thead>
+        <tbody id="salesTableBody">
+          <tr><td colspan="8"><div class="sales-empty">加载中…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- .page end -->
 
 <script>
   // ── 时钟 ──
@@ -285,18 +389,73 @@
     });
   }
 
-  // ── 加载数据 ──
+  // ── 金额格式化：元 → 万元 ──
+  function fmtAmount(val) {
+    if (val === null || val === undefined || val < 0) return '—';
+    const wan = val / 10000;
+    return wan === 0 ? '0' : (wan % 1 === 0 ? wan.toFixed(0) : wan.toFixed(2));
+  }
+
+  // ── 渲染销售年度表格 ──
+  function renderSalesTable(list, year) {
+    document.getElementById('salesYearTag').textContent = `${year}年`;
+    const tbody = document.getElementById('salesTableBody');
+    if (!list || list.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="sales-empty">暂无数据</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = list.map(row => {
+      const target = (row.annual_target !== null && row.annual_target !== undefined)
+        ? `${fmtAmount(row.annual_target)}<small style="color:#aaa;font-weight:400"> 万元</small>`
+        : `<span class="target-null">待配置</span>`;
+      const amt = row.deal_amount >= 0
+        ? `<span class="amount-val">${fmtAmount(row.deal_amount)}</span><small style="color:#aaa"> 万元</small>`
+        : '—';
+      return `
+        <tr>
+          <td>${row.name || '—'}</td>
+          <td>${target}</td>
+          <td>${amt}</td>
+          <td>${row.deal_count >= 0 ? row.deal_count : '—'}<small style="color:#aaa"> 个</small></td>
+          <td>${row.active_opp >= 0 ? row.active_opp : '—'}<small style="color:#aaa"> 个</small></td>
+          <td>${row.customer_count >= 0 ? row.customer_count : '—'}<small style="color:#aaa"> 个</small></td>
+          <td>${row.visit_count >= 0 ? row.visit_count : '—'}<small style="color:#aaa"> 次</small></td>
+          <td>${row.reception_count >= 0 ? row.reception_count : '—'}<small style="color:#aaa"> 次</small></td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ── 加载销售年度统计 ──
+  async function loadSalesStats() {
+    const tbody = document.getElementById('salesTableBody');
+    tbody.innerHTML = '<tr><td colspan="8"><div class="sales-empty"><span class="table-skeleton"></span></div></td></tr>';
+    try {
+      const resp = await fetch(`${API_BASE}/api/sales_stats`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const d = await resp.json();
+      renderSalesTable(d.list, d.year);
+    } catch(e) {
+      console.error('销售统计加载失败:', e);
+      tbody.innerHTML = '<tr><td colspan="8"><div class="sales-empty">加载失败，请确认后端已启动</div></td></tr>';
+    }
+  }
+
+  // ── 加载指标卡数据 ──
   async function loadDashboard() {
     const btn = document.getElementById('btnRefresh');
     btn.classList.add('loading');
     resetSkeleton();
     setStatus('loading', '正在加载…');
 
-    try {
-      const resp = await fetch(`${API_BASE}/api/dashboard`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const d = await resp.json();
+    // 两个接口并发
+    const [dashResult] = await Promise.allSettled([
+      fetch(`${API_BASE}/api/dashboard`)
+        .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
+      loadSalesStats(),
+    ]);
 
+    if (dashResult.status === 'fulfilled') {
+      const d = dashResult.value;
       setVal('v-customer-total',  d.customer_total);
       setVal('v-customer-new',    d.customer_new_month);
       setVal('v-visit',           d.visit_month);
@@ -313,8 +472,8 @@
       const t = new Date();
       setStatus('', `更新于 ${t.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`);
       document.getElementById('statusDot').style.background = '#52c41a';
-    } catch(e) {
-      console.error(e);
+    } else {
+      console.error(dashResult.reason);
       setStatus('error', '加载失败，请确认后端已启动');
     }
 
