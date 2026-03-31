@@ -256,18 +256,19 @@
       padding: 2px 8px;
     }
     .chart-body {
-      padding: 12px 14px;
+      padding: 14px 14px;
     }
     .chart-row {
       display: flex;
       align-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .chart-row:last-child { margin-bottom: 0; }
     .chart-label {
-      width: 70px;
+      width: 56px;
       font-size: 12px;
-      color: #666;
+      color: #444;
+      font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -275,38 +276,41 @@
     }
     .chart-bar-wrap {
       flex: 1;
-      margin: 0 10px;
-      height: 20px;
-      background: #f5f5f5;
-      border-radius: 10px;
+      margin: 0 8px;
+      height: 18px;
+      background: #f0f0f0;
+      border-radius: 9px;
       overflow: hidden;
       position: relative;
     }
     .chart-bar {
       height: 100%;
-      border-radius: 10px;
-      transition: width 0.6s ease;
+      border-radius: 9px;
+      transition: width 0.5s ease;
+      min-width: 2px;
     }
-    .chart-bar.blue { background: linear-gradient(90deg, #1677ff, #4096ff); }
-    .chart-bar.green { background: linear-gradient(90deg, #389e0d, #52c41a); }
-    .chart-bar.orange { background: linear-gradient(90deg, #d48806, #faad14); }
-    .chart-bar.red { background: linear-gradient(90deg, #cf1322, #ff4d4f); }
-    .chart-bar.purple { background: linear-gradient(90deg, #722ed1, #9254de); }
-    .chart-bar.cyan { background: linear-gradient(90deg, #096dd9, #13c2c2); }
-    .chart-bar.teal { background: linear-gradient(90deg, #08979c, #36cfc9); }
+    .chart-bar.bar-0 { background: #1890ff; }
+    .chart-bar.bar-1 { background: #52c41a; }
+    .chart-bar.bar-2 { background: #faad14; }
+    .chart-bar.bar-3 { background: #f5222d; }
+    .chart-bar.bar-4 { background: #722ed1; }
+    .chart-bar.bar-5 { background: #13c2c2; }
+    .chart-bar.bar-6 { background: #eb2f96; }
     .chart-value {
-      width: 60px;
+      width: 50px;
       text-align: right;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #333;
       flex-shrink: 0;
     }
-    .chart-value.wan { color: #1677ff; }
+    .chart-value.wan { color: #1890ff; }
     .chart-skeleton {
       display: flex;
       align-items: center;
+      gap: 8px;
     }
+    .chart-skeleton .skeleton { width: 40px; height: 12px; }
     .chart-skeleton .skeleton { width: 60px; height: 14px; margin-right: 10px; }
     .chart-skeleton .skeleton:last-child { width: 40px; }
     .chart-empty {
@@ -623,30 +627,32 @@
     // 计算最大值用于百分比
     let maxVal = 0;
     list.forEach(item => {
-      let val = item[field];
-      if (field === 'deal_amount') val = val / 10000; // 金额转万元
+      let val = item[field] || 0;
+      if (field === 'deal_amount') val = val / 10000;
       if (val > maxVal) maxVal = val;
     });
+    // 如果最大值是0，给一个最小值让柱状图能显示
     if (maxVal === 0) maxVal = 1;
 
-    const colors = ['blue', 'green', 'orange', 'red', 'purple', 'cyan', 'teal'];
     container.innerHTML = list.slice(0, 8).map((item, i) => {
-      let val = item[field];
+      let val = item[field] || 0;
       let displayVal, unit;
       if (field === 'deal_amount') {
-        displayVal = (val / 10000).toFixed(1);
+        displayVal = val > 0 ? (val / 10000).toFixed(1) : '0';
         unit = '万';
       } else {
         displayVal = val;
-        unit = '';
+        unit = val > 0 && field.includes('count') ? '次' : '';
       }
-      const percent = (val / (field === 'deal_amount' ? maxVal * 10000 : maxVal)) * 100;
-      const color = colors[i % colors.length];
+      // 计算百分比，最小2%让柱状图可见
+      let rawPercent = maxVal > 0 ? (val / maxVal) * 100 : 0;
+      let percent = rawPercent > 0 ? Math.max(rawPercent, 3) : 0;
+      const barClass = `bar-${i % 7}`;
       return `
         <div class="chart-row">
           <div class="chart-label" title="${item.name || ''}">${item.name || '未知'}</div>
           <div class="chart-bar-wrap">
-            <div class="chart-bar ${color}" style="width: ${percent}%"></div>
+            <div class="chart-bar ${barClass}" style="width: ${percent}%"></div>
           </div>
           <div class="chart-value${field === 'deal_amount' ? ' wan' : ''}">${displayVal}${unit}</div>
         </div>`;
