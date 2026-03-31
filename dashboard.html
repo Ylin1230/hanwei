@@ -227,6 +227,94 @@
       padding: 24px;
       font-size: 13px;
     }
+
+    /* ── 柱状图 ── */
+    .chart-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #ebebeb;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    .chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+    .chart-month {
+      font-size: 12px;
+      color: #1677ff;
+      background: #e8f4ff;
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+    .chart-body {
+      padding: 12px 14px;
+    }
+    .chart-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .chart-row:last-child { margin-bottom: 0; }
+    .chart-label {
+      width: 70px;
+      font-size: 12px;
+      color: #666;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+    }
+    .chart-bar-wrap {
+      flex: 1;
+      margin: 0 10px;
+      height: 20px;
+      background: #f5f5f5;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+    .chart-bar {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.6s ease;
+    }
+    .chart-bar.blue { background: linear-gradient(90deg, #1677ff, #4096ff); }
+    .chart-bar.green { background: linear-gradient(90deg, #389e0d, #52c41a); }
+    .chart-bar.orange { background: linear-gradient(90deg, #d48806, #faad14); }
+    .chart-bar.red { background: linear-gradient(90deg, #cf1322, #ff4d4f); }
+    .chart-bar.purple { background: linear-gradient(90deg, #722ed1, #9254de); }
+    .chart-bar.cyan { background: linear-gradient(90deg, #096dd9, #13c2c2); }
+    .chart-bar.teal { background: linear-gradient(90deg, #08979c, #36cfc9); }
+    .chart-value {
+      width: 60px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      flex-shrink: 0;
+    }
+    .chart-value.wan { color: #1677ff; }
+    .chart-skeleton {
+      display: flex;
+      align-items: center;
+    }
+    .chart-skeleton .skeleton { width: 60px; height: 14px; margin-right: 10px; }
+    .chart-skeleton .skeleton:last-child { width: 40px; }
+    .chart-empty {
+      text-align: center;
+      color: #bbb;
+      padding: 16px;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
@@ -342,6 +430,90 @@
     </div>
   </div>
 
+  <!-- 销售业绩达成情况 -->
+  <div class="group-label">本月销售业绩达成</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">成交合同额</span>
+      <span class="chart-month" id="chartMonth1">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-deal-amount">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 本月宴请客户次数 -->
+  <div class="group-label">本月宴请客户次数</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">按销售统计</span>
+      <span class="chart-month" id="chartMonth2">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-reception">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 本月新增客户数量 -->
+  <div class="group-label">本月新增客户数量</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">按销售统计</span>
+      <span class="chart-month" id="chartMonth3">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-customer-new">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 本月客户拜访次数 -->
+  <div class="group-label">本月客户拜访次数</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">按销售统计</span>
+      <span class="chart-month" id="chartMonth4">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-visit">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 本月商机赢单数量 -->
+  <div class="group-label">本月商机赢单数量</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">按销售统计</span>
+      <span class="chart-month" id="chartMonth5">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-opp-won">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 本月新增商机数量 -->
+  <div class="group-label">本月新增商机数量</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">按销售统计</span>
+      <span class="chart-month" id="chartMonth6">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-opp-new">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 本月商机跟进次数 -->
+  <div class="group-label">本月商机跟进次数</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <span class="chart-title">按销售统计</span>
+      <span class="chart-month" id="chartMonth7">2026年03月</span>
+    </div>
+    <div class="chart-body" id="chart-opp-followup">
+      <div class="chart-empty">加载中…</div>
+    </div>
+  </div>
+
 </div><!-- .page end -->
 
 <script>
@@ -440,6 +612,83 @@
     }
   }
 
+  // ── 渲染柱状图 ──
+  function renderBarChart(containerId, list, field, options = {}) {
+    const container = document.getElementById(containerId);
+    if (!list || list.length === 0) {
+      container.innerHTML = '<div class="chart-empty">暂无数据</div>';
+      return;
+    }
+
+    // 计算最大值用于百分比
+    let maxVal = 0;
+    list.forEach(item => {
+      let val = item[field];
+      if (field === 'deal_amount') val = val / 10000; // 金额转万元
+      if (val > maxVal) maxVal = val;
+    });
+    if (maxVal === 0) maxVal = 1;
+
+    const colors = ['blue', 'green', 'orange', 'red', 'purple', 'cyan', 'teal'];
+    container.innerHTML = list.slice(0, 8).map((item, i) => {
+      let val = item[field];
+      let displayVal, unit;
+      if (field === 'deal_amount') {
+        displayVal = (val / 10000).toFixed(1);
+        unit = '万';
+      } else {
+        displayVal = val;
+        unit = '';
+      }
+      const percent = (val / (field === 'deal_amount' ? maxVal * 10000 : maxVal)) * 100;
+      const color = colors[i % colors.length];
+      return `
+        <div class="chart-row">
+          <div class="chart-label" title="${item.name || ''}">${item.name || '未知'}</div>
+          <div class="chart-bar-wrap">
+            <div class="chart-bar ${color}" style="width: ${percent}%"></div>
+          </div>
+          <div class="chart-value${field === 'deal_amount' ? ' wan' : ''}">${displayVal}${unit}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── 加载月度柱状图数据 ──
+  async function loadMonthlyStats() {
+    const chartIds = ['chart-deal-amount', 'chart-reception', 'chart-customer-new', 'chart-visit', 'chart-opp-won', 'chart-opp-new', 'chart-opp-followup'];
+    chartIds.forEach(id => {
+      const el = document.getElementById(id);
+      el.innerHTML = '<div class="chart-skeleton"><span class="skeleton"></span><span class="skeleton"></span></div>';
+    });
+
+    try {
+      const resp = await fetch(`${API_BASE}/api/monthly_stats`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const d = await resp.json();
+
+      // 更新月份标签
+      const monthLabel = d.month + '月';
+      for (let i = 1; i <= 7; i++) {
+        const el = document.getElementById('chartMonth' + i);
+        if (el) el.textContent = monthLabel;
+      }
+
+      // 渲染各柱状图
+      renderBarChart('chart-deal-amount', d.list, 'deal_amount');
+      renderBarChart('chart-reception', d.list, 'reception_count');
+      renderBarChart('chart-customer-new', d.list, 'customer_new');
+      renderBarChart('chart-visit', d.list, 'visit_count');
+      renderBarChart('chart-opp-won', d.list, 'opp_won');
+      renderBarChart('chart-opp-new', d.list, 'opp_new');
+      renderBarChart('chart-opp-followup', d.list, 'opp_followup');
+    } catch(e) {
+      console.error('月度统计加载失败:', e);
+      chartIds.forEach(id => {
+        document.getElementById(id).innerHTML = '<div class="chart-empty">加载失败</div>';
+      });
+    }
+  }
+
   // ── 加载指标卡数据 ──
   async function loadDashboard() {
     const btn = document.getElementById('btnRefresh');
@@ -447,11 +696,12 @@
     resetSkeleton();
     setStatus('loading', '正在加载…');
 
-    // 两个接口并发
+    // 三个接口并发
     const [dashResult] = await Promise.allSettled([
       fetch(`${API_BASE}/api/dashboard`)
         .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
       loadSalesStats(),
+      loadMonthlyStats(),
     ]);
 
     if (dashResult.status === 'fulfilled') {
